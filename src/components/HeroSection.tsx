@@ -36,7 +36,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <div className="absolute right-8 md:right-24 top-0 bottom-0 w-[1px] bg-craftBorder/60 pointer-events-none hidden sm:block" />
 
       {/* Top Monospaced Micro-Badges Bar */}
-      <div className="relative z-10 pt-28 sm:pt-32 px-6 sm:px-12 md:px-24">
+      <div className="relative z-10 pt-4 sm:pt-6 px-6 sm:px-12 md:px-24">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-craftBorder pb-4 text-[11px] font-mono tracking-widest uppercase text-obsidian/70">
           <div className="flex items-center space-x-2">
             <span className="inline-block w-2 h-2 rounded-full bg-terracotta" />
