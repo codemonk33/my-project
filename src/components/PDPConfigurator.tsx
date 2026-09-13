@@ -16,8 +16,11 @@ import {
   ChevronRight,
   Layers,
   X,
+  ShoppingBag,
+  Heart,
 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { useShop } from "../context/ShopContext";
 
 interface PDPConfiguratorProps {
   initialProduct?: RugProduct;
@@ -40,6 +43,8 @@ export const PDPConfigurator: React.FC<PDPConfiguratorProps> = ({
   initialProduct = CATALOG_PRODUCTS[0],
   onClose,
 }) => {
+  const { formatPrice, addToCart, toggleWishlist, isInWishlist } = useShop();
+
   const [selectedProduct] = useState<RugProduct>(initialProduct);
 
   // Live Configurator State
@@ -68,6 +73,15 @@ export const PDPConfigurator: React.FC<PDPConfiguratorProps> = ({
   const areaSqFt = (widthFt * lengthFt).toFixed(1);
   const areaSqM = ((widthCm * lengthCm) / 10000).toFixed(2);
 
+  // Dynamic price calculation based on area and technique
+  const baseRatePerSqFt =
+    technique === "hand-knotted"
+      ? 1800
+      : technique === "hand-tufted"
+      ? 1100
+      : 800;
+  const calculatedPriceINR = Math.round(parseFloat(areaSqFt) * baseRatePerSqFt);
+
   const activeConfig: RugConfig = {
     technique,
     collection,
@@ -91,6 +105,7 @@ Collection: ${collection.toUpperCase()}
 Fiber Composition: ${fiber.toUpperCase()}
 Dimensions: ${widthFt} x ${lengthFt} FT (${widthCm} x ${lengthCm} CM)
 Total Surface Area: ${areaSqFt} SQ. FT / ${areaSqM} SQ. METERS
+Estimated Valuation: INR ${calculatedPriceINR.toLocaleString()}
 Primary Yarn Pigment: ${primaryColor}
 Secondary Yarn Pigment: ${secondaryColor}
 Accent Yarn Pigment: ${accentColor}
@@ -133,6 +148,19 @@ Generated via Naman 3D Architectural Spec Engine.
     }, 2500);
   };
 
+  const handleAddBespokeToBag = () => {
+    addToCart({
+      id: `${selectedProduct.id}-custom-${widthFt}x${lengthFt}-${technique}-${Date.now()}`,
+      product: selectedProduct,
+      size: `${widthFt} × ${lengthFt} ft`,
+      widthFt,
+      lengthFt,
+      fiber,
+      primaryColor,
+      price: calculatedPriceINR,
+    });
+  };
+
   // WhatsApp concierge link with pre-encoded bespoke specifications
   const waMessage = encodeURIComponent(
     `Hello Naman Rugs Studio Concierge, I am specifying a bespoke rug:\n- Model: ${selectedProduct.name}\n- Technique: ${technique}\n- Dimensions: ${widthFt}x${lengthFt} ft (${widthCm}x${lengthCm} cm)\n- Fiber: ${fiber}\n- Primary Color: ${primaryColor}\nCould we arrange a project review or yarn swatch box?`
@@ -151,15 +179,32 @@ Generated via Naman 3D Architectural Spec Engine.
             <span className="text-obsidian font-semibold">{selectedProduct.name}</span>
           </div>
 
-          {onClose && (
+          <div className="flex items-center space-x-3">
             <button
-              onClick={onClose}
-              className="p-1.5 border border-craftBorder hover:border-obsidian transition-colors"
-              title="Close Product View"
+              onClick={() => toggleWishlist(selectedProduct)}
+              className="p-1.5 border border-craftBorder hover:border-obsidian transition-colors flex items-center space-x-1"
+              title="Save to Wishlist"
             >
-              <X className="w-4 h-4 text-obsidian" />
+              <Heart
+                className={`w-4 h-4 ${
+                  isInWishlist(selectedProduct.id) ? "fill-terracotta text-terracotta" : "text-obsidian"
+                }`}
+              />
+              <span className="hidden sm:inline text-[10px]">
+                {isInWishlist(selectedProduct.id) ? "Saved" : "Save"}
+              </span>
             </button>
-          )}
+
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="p-1.5 border border-craftBorder hover:border-obsidian transition-colors"
+                title="Close Product View"
+              >
+                <X className="w-4 h-4 text-obsidian" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Split Screen Grid: 3D Viewport Left, Architectural Dossier Right */}
@@ -188,7 +233,7 @@ Generated via Naman 3D Architectural Spec Engine.
 
           {/* Right Column: Architectural Product Dossier & Customizer */}
           <div className="lg:col-span-5 space-y-8 bg-linen/50 p-6 sm:p-8 border border-craftBorder">
-            {/* Title & Coordinates */}
+            {/* Title & Live Valuation */}
             <div>
               <div className="flex justify-between items-center text-xs font-mono text-terracotta uppercase mb-1">
                 <span>Authentic Bhadohi Loom</span>
@@ -197,7 +242,15 @@ Generated via Naman 3D Architectural Spec Engine.
               <h2 className="font-serif text-3xl sm:text-4xl text-obsidian uppercase">
                 {selectedProduct.name}
               </h2>
-              <p className="text-sm text-obsidian/70 font-light mt-2">
+              <div className="mt-2 flex items-baseline space-x-3">
+                <span className="font-serif text-3xl text-obsidian font-medium">
+                  {formatPrice(calculatedPriceINR)}
+                </span>
+                <span className="text-xs font-mono text-obsidian/60">
+                  ({areaSqFt} sq. ft @ {unitSystem === "ft" ? `${widthFt}×${lengthFt} ft` : `${widthCm}×${lengthCm} cm`})
+                </span>
+              </div>
+              <p className="text-xs text-obsidian/70 font-light mt-2">
                 {selectedProduct.tagline}
               </p>
             </div>
@@ -423,11 +476,16 @@ Generated via Naman 3D Architectural Spec Engine.
               </div>
             </div>
 
-            {/* 5. Trade & Specifier Action Buttons */}
+            {/* 5. Add to Bag & Trade Actions */}
             <div className="pt-4 border-t border-craftBorder space-y-3">
-              <span className="block text-xs font-mono tracking-widest uppercase text-obsidian/70 font-semibold">
-                5. Specifier Actions & Trade Concierge
-              </span>
+              {/* Primary Add to Cart Button */}
+              <button
+                onClick={handleAddBespokeToBag}
+                className="w-full py-4 bg-obsidian text-alabaster font-mono text-xs uppercase tracking-widest hover:bg-terracotta transition-colors flex items-center justify-center space-x-2 font-semibold shadow-luxury-soft"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Add Customized Rug to Loom Bag ({formatPrice(calculatedPriceINR)})</span>
+              </button>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Download Spec Sheet */}
@@ -463,9 +521,9 @@ Generated via Naman 3D Architectural Spec Engine.
                 href={`https://wa.me/917317076787?text=${waMessage}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center space-x-2 bg-obsidian text-alabaster px-4 py-3.5 text-xs font-mono tracking-widest uppercase hover:bg-terracotta transition-colors shadow-luxury-soft"
+                className="w-full flex items-center justify-center space-x-2 bg-linen text-obsidian border border-craftBorder px-4 py-3 text-xs font-mono tracking-widest uppercase hover:bg-obsidian hover:text-white transition-colors"
               >
-                <MessageCircle className="w-4 h-4" />
+                <MessageCircle className="w-4 h-4 text-terracotta" />
                 <span>Inquire via WhatsApp Studio Concierge (+91 7317076787)</span>
               </a>
             </div>

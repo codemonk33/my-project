@@ -1,8 +1,20 @@
 import * as THREE from "three";
 
-export type WeavingTechnique = "hand-knotted" | "hand-tufted" | "hand-loom";
-export type RugCollection = "modern-geometric" | "sculpted-naturals" | "soft-ombre";
-export type FiberMaterial = "pure-wool" | "wool-bamboo-silk" | "jute" | "linen";
+export type WeavingTechnique = "hand-knotted" | "hand-tufted" | "hand-loom" | "flatweave-dhurrie";
+export type RugCollection =
+  | "modern-geometric"
+  | "sculpted-naturals"
+  | "soft-ombre"
+  | "moroccan-trellis"
+  | "manchaha-artisan"
+  | "heritage-dhurrie";
+
+export type FiberMaterial =
+  | "pure-wool"
+  | "wool-bamboo-silk"
+  | "jute"
+  | "linen"
+  | "silk-blend";
 
 export interface RugConfig {
   technique: WeavingTechnique;
@@ -17,7 +29,7 @@ export interface RugConfig {
 
 /**
  * Procedurally generates high-resolution PBR Texture Maps (Albedo, Normal, Roughness, Displacement)
- * tailored to authentic Bhadohi rug weaving techniques and cc-tapis editorial aesthetics.
+ * tailored to authentic Bhadohi rug weaving techniques, Jaipur Rugs collections, and cc-tapis editorial aesthetics.
  */
 export class RugTextureEngine {
   private static cache: Map<string, {
@@ -102,7 +114,94 @@ export class RugTextureEngine {
     ctxH.fillStyle = "#808080";
     ctxH.fillRect(0, 0, w, h);
 
-    if (collection === "modern-geometric") {
+    if (collection === "moroccan-trellis") {
+      // Moroccan Diamond Lattice
+      ctxA.fillStyle = secondaryColor;
+      ctxA.fillRect(0, 0, w, h);
+
+      ctxA.strokeStyle = primaryColor;
+      ctxA.lineWidth = 12;
+      ctxH.strokeStyle = "#DCDCDC"; // High relief diamond pile
+      ctxH.lineWidth = 14;
+
+      const gridSize = 160;
+      for (let x = -gridSize; x < w + gridSize; x += gridSize) {
+        for (let y = -gridSize; y < h + gridSize; y += gridSize) {
+          ctxA.beginPath();
+          ctxA.moveTo(x, y + gridSize / 2);
+          ctxA.lineTo(x + gridSize / 2, y);
+          ctxA.lineTo(x + gridSize, y + gridSize / 2);
+          ctxA.lineTo(x + gridSize / 2, y + gridSize);
+          ctxA.closePath();
+          ctxA.stroke();
+
+          ctxH.beginPath();
+          ctxH.moveTo(x, y + gridSize / 2);
+          ctxH.lineTo(x + gridSize / 2, y);
+          ctxH.lineTo(x + gridSize, y + gridSize / 2);
+          ctxH.lineTo(x + gridSize / 2, y + gridSize);
+          ctxH.closePath();
+          ctxH.stroke();
+        }
+      }
+    } else if (collection === "heritage-dhurrie") {
+      // Plaid / Tartan Check Dhurrie
+      ctxA.fillStyle = secondaryColor;
+      ctxA.fillRect(0, 0, w, h);
+
+      // Horizontal and vertical grid bands
+      for (let x = 60; x < w; x += 120) {
+        ctxA.fillStyle = primaryColor;
+        ctxA.globalAlpha = 0.45;
+        ctxA.fillRect(x, 0, 36, h);
+
+        ctxA.fillStyle = accentColor;
+        ctxA.fillRect(x + 12, 0, 12, h);
+
+        ctxH.fillStyle = "#A0A0A0";
+        ctxH.fillRect(x, 0, 36, h);
+      }
+
+      for (let y = 60; y < h; y += 140) {
+        ctxA.fillStyle = primaryColor;
+        ctxA.globalAlpha = 0.45;
+        ctxA.fillRect(0, y, w, 36);
+
+        ctxA.fillStyle = accentColor;
+        ctxA.fillRect(0, y + 12, w, 12);
+
+        ctxH.fillStyle = "#A0A0A0";
+        ctxH.fillRect(0, y, w, 36);
+      }
+      ctxA.globalAlpha = 1.0;
+    } else if (collection === "manchaha-artisan") {
+      // Abstract vibrant expressionist rug (cobalt, ochre, distressed)
+      ctxA.fillStyle = primaryColor;
+      ctxA.fillRect(0, 0, w, h);
+
+      // Spontaneous patches by artisan
+      ctxA.fillStyle = accentColor;
+      ctxH.fillStyle = "#B0B0B0";
+      for (let i = 0; i < 9; i++) {
+        const px = (w * (i * 0.23 + 0.1)) % w;
+        const py = (h * (i * 0.19 + 0.15)) % h;
+        const rw = 180 + (i % 4) * 60;
+        const rh = 140 + (i % 3) * 70;
+        ctxA.fillRect(px, py, rw, rh);
+        ctxH.fillRect(px, py, rw, rh);
+      }
+
+      // Distressed splatters & stippling
+      for (let i = 0; i < 400; i++) {
+        const sx = Math.random() * w;
+        const sy = Math.random() * h;
+        const rad = 2 + Math.random() * 8;
+        ctxA.fillStyle = i % 2 === 0 ? secondaryColor : "#E29548";
+        ctxA.beginPath();
+        ctxA.arc(sx, sy, rad, 0, Math.PI * 2);
+        ctxA.fill();
+      }
+    } else if (collection === "modern-geometric") {
       // Architectural bold arch, checkerboard and curved shapes
       ctxA.fillStyle = primaryColor;
       ctxH.fillStyle = "#B8B8B8"; // Elevated pile
@@ -209,7 +308,14 @@ export class RugTextureEngine {
     config: RugConfig
   ) {
     const { technique } = config;
-    const step = technique === "hand-knotted" ? 4 : technique === "hand-tufted" ? 7 : 5;
+    const step =
+      technique === "hand-knotted"
+        ? 4
+        : technique === "hand-tufted"
+        ? 7
+        : technique === "flatweave-dhurrie"
+        ? 6
+        : 5;
 
     // Add tactile fiber micro-dots
     const imgDataA = ctxA.getImageData(0, 0, w, h);
@@ -229,15 +335,15 @@ export class RugTextureEngine {
 
         // Modulate height based on technique
         if (technique === "hand-knotted") {
-          // Micro-grain knots
           dataH[idx] = Math.min(255, Math.max(0, dataH[idx] + noise * 1.8));
         } else if (technique === "hand-tufted") {
-          // Tuft loops / cut pile clusters
-          const cluster = ((x % 14 < 7) ? 20 : -20);
+          const cluster = x % 14 < 7 ? 20 : -20;
           dataH[idx] = Math.min(255, Math.max(0, dataH[idx] + cluster + noise));
+        } else if (technique === "flatweave-dhurrie") {
+          const cross = (x % 8 < 4 ? 10 : -10) + (y % 8 < 4 ? 10 : -10);
+          dataH[idx] = Math.min(255, Math.max(0, dataH[idx] + cross + noise * 0.5));
         } else {
-          // Hand-loom ribbed horizontal weft lines
-          const rib = (y % 10 < 5 ? 18 : -18);
+          const rib = y % 10 < 5 ? 18 : -18;
           dataH[idx] = Math.min(255, Math.max(0, dataH[idx] + rib + noise * 0.8));
         }
       }
@@ -263,14 +369,21 @@ export class RugTextureEngine {
     const nImg = ctxN.createImageData(w, h);
     const nData = nImg.data;
 
-    const strength = technique === "hand-tufted" ? 3.2 : technique === "hand-knotted" ? 2.2 : 1.8;
+    const strength =
+      technique === "hand-tufted"
+        ? 3.2
+        : technique === "hand-knotted"
+        ? 2.2
+        : technique === "flatweave-dhurrie"
+        ? 1.5
+        : 1.8;
 
     for (let y = 1; y < h - 1; y++) {
       for (let x = 1; x < w - 1; x++) {
-        const left = hData[((y * w) + (x - 1)) * 4];
-        const right = hData[((y * w) + (x + 1)) * 4];
-        const up = hData[(((y - 1) * w) + x) * 4];
-        const down = hData[(((y + 1) * w) + x) * 4];
+        const left = hData[(y * w + (x - 1)) * 4];
+        const right = hData[(y * w + (x + 1)) * 4];
+        const up = hData[((y - 1) * w + x) * 4];
+        const down = hData[((y + 1) * w + x) * 4];
 
         const dx = ((left - right) / 255) * strength;
         const dy = ((up - down) / 255) * strength;
@@ -304,9 +417,14 @@ export class RugTextureEngine {
     roughnessCanvas.height = h;
     const ctxR = roughnessCanvas.getContext("2d")!;
 
-    // Wool has high diffuse absorption (roughness ~0.85-0.95)
-    // Bamboo silk has reflective glancing luster (roughness ~0.35-0.65)
-    const baseRoughness = fiber === "wool-bamboo-silk" ? 110 : fiber === "linen" ? 190 : fiber === "jute" ? 230 : 215;
+    const baseRoughness =
+      fiber === "wool-bamboo-silk" || fiber === "silk-blend"
+        ? 110
+        : fiber === "linen"
+        ? 190
+        : fiber === "jute"
+        ? 230
+        : 215;
 
     const hCtx = heightCanvas.getContext("2d")!;
     const hData = hCtx.getImageData(0, 0, w, h).data;
@@ -315,7 +433,6 @@ export class RugTextureEngine {
 
     for (let i = 0; i < hData.length; i += 4) {
       const heightVal = hData[i];
-      // Slightly more specular highlights on the peaks of the pile
       const roughVal = Math.min(255, Math.max(40, baseRoughness - Math.floor((heightVal - 128) * 0.3)));
       rData[i] = roughVal;
       rData[i + 1] = roughVal;
