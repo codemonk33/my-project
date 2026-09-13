@@ -521,10 +521,10 @@ Generated via Naman 3D Architectural Spec Engine.
                 href={`https://wa.me/917317076787?text=${waMessage}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center space-x-2 bg-linen text-obsidian border border-craftBorder px-4 py-3 text-xs font-mono tracking-widest uppercase hover:bg-obsidian hover:text-white transition-colors"
+                className="w-full flex items-center justify-center space-x-2 bg-[#25D366]/10 text-emerald-900 border border-[#25D366]/40 hover:bg-[#25D366] hover:text-white px-4 py-3.5 text-xs font-mono tracking-widest uppercase transition-all shadow-sm group"
               >
-                <MessageCircle className="w-4 h-4 text-terracotta" />
-                <span>Inquire via WhatsApp Studio Concierge (+91 7317076787)</span>
+                <MessageCircle className="w-4 h-4 text-[#25D366] group-hover:text-white transition-colors" />
+                <span>Chat on WhatsApp (+91 7317076787)</span>
               </a>
             </div>
           </div>

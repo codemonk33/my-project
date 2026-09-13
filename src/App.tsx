@@ -1,26 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ShopProvider } from "./context/ShopContext";
 import { MegaMenuHeader } from "./components/MegaMenuHeader";
-import HeroSection from "./components/HeroSection";
-import BrandStory from "./components/BrandStory";
-import ProcessPipeline from "./components/ProcessPipeline";
-import TechniquePortals from "./components/TechniquePortals";
-import CollectionsGallery, { CATALOG_PRODUCTS } from "./components/CollectionsGallery";
-import type { RugProduct } from "./components/CollectionsGallery";
-import PDPConfigurator from "./components/PDPConfigurator";
-import { RoomSizeVisualizer } from "./components/RoomSizeVisualizer";
-import { ManchahaArtisanGallery } from "./components/ManchahaArtisanGallery";
-import { RugCareService } from "./components/RugCareService";
-import { VirtualLoomTour } from "./components/VirtualLoomTour";
-import TradePortal from "./components/TradePortal";
-import IndustrialDossier from "./components/IndustrialDossier";
 import Footer from "./components/Footer";
 import { CartDrawer } from "./components/CartDrawer";
 import { WishlistDrawer } from "./components/WishlistDrawer";
 import { SearchModal } from "./components/SearchModal";
+import { WhatsAppConcierge } from "./components/WhatsAppConcierge";
+import { CATALOG_PRODUCTS } from "./components/CollectionsGallery";
+import type { RugProduct } from "./components/CollectionsGallery";
 import type { WeavingTechnique } from "./utils/rugTextureEngine";
 
-function AppContent() {
+// Subpages
+import HomePage from "./pages/HomePage";
+import CollectionsPage from "./pages/CollectionsPage";
+import CustomStudioPage from "./pages/CustomStudioPage";
+import ManchahaPage from "./pages/ManchahaPage";
+import SizeGuidePage from "./pages/SizeGuidePage";
+import CareServicesPage from "./pages/CareServicesPage";
+import TradePage from "./pages/TradePage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
+
+// Scroll to top upon route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
+function AppLayout() {
   const [selectedProductForPDP, setSelectedProductForPDP] = useState<RugProduct>(CATALOG_PRODUCTS[0]);
 
   const scrollToSection = (id: string) => {
@@ -32,15 +43,6 @@ function AppContent() {
 
   const handleSelectProductFor3D = (product: RugProduct) => {
     setSelectedProductForPDP(product);
-    const configEl = document.getElementById("configurator");
-    if (configEl) {
-      configEl.scrollIntoView({ behavior: "smooth" });
-    } else {
-      setTimeout(() => {
-        const el = document.getElementById("configurator");
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    }
   };
 
   const handleTechniqueSelected = (technique: WeavingTechnique) => {
@@ -48,12 +50,10 @@ function AppContent() {
     handleSelectProductFor3D(matched);
   };
 
-  const handleSizeGuideSelect = (_sizeLabel: string) => {
-    scrollToSection("collections");
-  };
-
   return (
     <div className="min-h-screen bg-alabaster text-obsidian flex flex-col font-sans">
+      <ScrollToTop />
+
       {/* 1. Milanese Editorial & Jaipur Mega-Menu Navigation */}
       <MegaMenuHeader
         onNavClick={scrollToSection}
@@ -62,63 +62,59 @@ function AppContent() {
       />
 
       <main className="flex-1 pt-24 sm:pt-28">
-        {/* 2. Hero Section: The Digital Loom */}
-        <HeroSection
-          onExploreClick={() => scrollToSection("collections")}
-          onOpenPDPClick={() => scrollToSection("configurator")}
-          onTradeClick={() => scrollToSection("trade")}
-        />
-
-        {/* 3. Brand Story & Authentic Family of Craftspeople */}
-        <BrandStory />
-
-        {/* 4. The 8-Stage Interactive Workshop Lifecycle */}
-        <ProcessPipeline />
-
-        {/* 5. Weaving Divisions: Hand-Knotted, Hand-Tufted, Hand-Woven */}
-        <TechniquePortals
-          onSelectTechniqueForConfigurator={handleTechniqueSelected}
-        />
-
-        {/* 6. The Curated Collections Engine (Grid vs Moodboard with Faceted Filters) */}
-        <CollectionsGallery
-          onSelectProductFor3D={handleSelectProductFor3D}
-        />
-
-        {/* 7. Product Detail View (PDP) & Bespoke 3D WebGL Configurator */}
-        <div id="configurator">
-          <PDPConfigurator
-            initialProduct={selectedProductForPDP}
-            key={selectedProductForPDP.id}
+        <Routes>
+          {/* Main Editorial Home Journey */}
+          <Route
+            path="/"
+            element={
+              <HomePage
+                selectedProductForPDP={selectedProductForPDP}
+                onSelectProductFor3D={handleSelectProductFor3D}
+                onTechniqueSelected={handleTechniqueSelected}
+              />
+            }
           />
-        </div>
 
-        {/* 8. Signature Jaipur Rugs Feature: Interactive Room Size Visualizer & Floor Clearing Guide */}
-        <RoomSizeVisualizer onSelectSizeFilter={handleSizeGuideSelect} />
+          {/* Dedicated Subpages */}
+          <Route
+            path="/collections"
+            element={<CollectionsPage onSelectProductFor3D={handleSelectProductFor3D} />}
+          />
+          <Route
+            path="/custom-studio"
+            element={<CustomStudioPage initialProduct={selectedProductForPDP} />}
+          />
+          <Route
+            path="/manchaha"
+            element={<ManchahaPage onSelectProductFor3D={handleSelectProductFor3D} />}
+          />
+          <Route path="/size-guide" element={<SizeGuidePage />} />
+          <Route path="/services" element={<CareServicesPage />} />
+          <Route path="/trade" element={<TradePage />} />
+          <Route
+            path="/about"
+            element={<AboutPage onTechniqueSelected={handleTechniqueSelected} />}
+          />
+          <Route path="/contact" element={<ContactPage />} />
 
-        {/* 9. Signature Jaipur Rugs Feature: Manchaha Artisan Weaver Art Carpet Gallery */}
-        <ManchahaArtisanGallery onSelectProductFor3D={handleSelectProductFor3D} />
-
-        {/* 10. Signature Jaipur Rugs Feature: Rug Care, Cleaning & Restoration Guide */}
-        <RugCareService />
-
-        {/* 11. Signature Jaipur Rugs Feature: Live Atelier Virtual Loom Consultation Reservation */}
-        <VirtualLoomTour />
-
-        {/* 12. Architectural Trade Portal (B2B Specifiers, Hospitality, Custom CAD) */}
-        <TradePortal />
-
-        {/* 13. Industrial Dossier (Maryadpatti Factory & Carpet City Showroom Coordinates) */}
-        <IndustrialDossier />
+          {/* Catch-all fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
-      {/* 14. Minimalist Milanese Editorial Footer */}
+      {/* 2. Milanese Editorial Footer */}
       <Footer />
 
-      {/* 15. Global E-Commerce Overlays (Cart Drawer, Wishlist Drawer, Live Search) */}
+      {/* 3. Global E-Commerce Drawers & Modals */}
       <CartDrawer />
       <WishlistDrawer onSelectProductFor3D={handleSelectProductFor3D} />
       <SearchModal onSelectProduct={handleSelectProductFor3D} />
+
+      {/* 4. Floating WhatsApp Atelier Concierge */}
+      <WhatsAppConcierge
+        phoneNumber="917317076787"
+        defaultMessage="Hello Naman Rugs Atelier, I am inquiring about your handcrafted carpets and custom loom specifications."
+      />
     </div>
   );
 }
@@ -126,7 +122,9 @@ function AppContent() {
 export function App() {
   return (
     <ShopProvider>
-      <AppContent />
+      <BrowserRouter>
+        <AppLayout />
+      </BrowserRouter>
     </ShopProvider>
   );
 }
