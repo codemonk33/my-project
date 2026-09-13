@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+:root {
+  --color-alabaster: #FBF9F5;
+  --color-linen: #EFECE6;
+  --color-obsidian: #121212;
+  --color-terracotta: #C87D55;
+  --color-indigo: #1F2B37;
+  --color-raw-wool: #DDD7CD;
+  --color-burnt-ochre: #A86438;
+}
+
+html {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  scroll-behavior: smooth;
+}
+
+/* Custom editorial scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5F2EB;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C5BCAD;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A86438;
+}
+
+/* Texture overlay for paper/linen tactile feel */
+.bg-grain {
+  background-image: radial-gradient(rgba(18, 18, 18, 0.035) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Offscreen performance guardrail via content-visibility */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 600px;
+}
+
+/* Hide scrollbar for clean horizontal pipelines */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
